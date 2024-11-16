@@ -4,7 +4,10 @@ import torch
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 import joblib
-from modelAGS import Model
+from modelAGS import ModelAGS
+from modelShafty import ModelShafty
+from modelSitlingi import ModelSitlingi as ModelSlitingi
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -20,11 +23,11 @@ class MainWindow(QMainWindow):
 
         buttonAGS = QPushButton("Model based on AGS value")
         buttonShafty = QPushButton("Model based on Shaft value")
-        buttonSitling = QPushButton("Model based on Sitlingi value")
+        buttonSitling = QPushButton("Model based on Slitingi value")
 
         buttonAGS.clicked.connect(lambda: self.show_input_window("AGS"))
         buttonShafty.clicked.connect(lambda: self.show_input_window("Shafty"))
-        buttonSitling.clicked.connect(lambda: self.show_input_window("Sitlingi"))
+        buttonSitling.clicked.connect(lambda: self.show_input_window("Slitingi"))
 
         layout.addWidget(buttonAGS)
         layout.addWidget(buttonShafty)
@@ -78,88 +81,117 @@ class MainWindow(QMainWindow):
             l.append(sub_layout_2)
 
             sub_layout_3 = QHBoxLayout()
-            SitlingiLabel = QLabel("Sitlingi:")
-            self.SitlingiValueLabel = QLabel("placeholder")
-            sub_layout_3.addWidget(SitlingiLabel)
-            sub_layout_3.addWidget(self.SitlingiValueLabel)
+            SlitingiLabel = QLabel("Slitingi:")
+            self.SlitingiValueLabel = QLabel("placeholder")
+            sub_layout_3.addWidget(SlitingiLabel)
+            sub_layout_3.addWidget(self.SlitingiValueLabel)
             l.append(sub_layout_3)
 
         elif model == "Shafty":
             sub_layout_1 = QHBoxLayout()
             ShaftyLabel = QLabel("Shafty:")
-            ShaftyInput = QLineEdit()
+            self.ShaftyInput = QLineEdit()
             sub_layout_1.addWidget(ShaftyLabel)
-            sub_layout_1.addWidget(ShaftyInput)
+            sub_layout_1.addWidget(self.ShaftyInput)
             l.append(sub_layout_1)
 
             sub_layout_2 = QHBoxLayout()
             AGSLabel = QLabel("AGS:")
-            AGSValueLabel = QLabel("placeholder")
+            self.AGSValueLabel = QLabel("placeholder")
             sub_layout_2.addWidget(AGSLabel)
-            sub_layout_2.addWidget(AGSValueLabel)
+            sub_layout_2.addWidget(self.AGSValueLabel)
             l.append(sub_layout_2)
 
             sub_layout_3 = QHBoxLayout()
-            SitlingiLabel = QLabel("Sitlingi:")
-            SitlingiValueLabel = QLabel("placeholder")
-            sub_layout_3.addWidget(SitlingiLabel)
-            sub_layout_3.addWidget(SitlingiValueLabel)
+            SlitingiLabel = QLabel("Slitingi:")
+            self.SlitingiValueLabel = QLabel("placeholder")
+            sub_layout_3.addWidget(SlitingiLabel)
+            sub_layout_3.addWidget(self.SlitingiValueLabel)
             l.append(sub_layout_3)
 
-        elif model == "Sitlingi":
+        elif model == "Slitingi":
             sub_layout_1 = QHBoxLayout()
-            SitlingiLabel = QLabel("Sitlingi:")
-            SitlingiInput = QLineEdit()
-            sub_layout_1.addWidget(SitlingiLabel)
-            sub_layout_1.addWidget(SitlingiInput)
+            SlitingiLabel = QLabel("Slitingi:")
+            self.SlitingiInput = QLineEdit()
+            sub_layout_1.addWidget(SlitingiLabel)
+            sub_layout_1.addWidget(self.SlitingiInput)
             l.append(sub_layout_1)
 
             sub_layout_2 = QHBoxLayout()
             AGSLabel = QLabel("AGS:")
-            AGSValueLabel = QLabel("placeholder")
+            self.AGSValueLabel = QLabel("placeholder")
             sub_layout_2.addWidget(AGSLabel)
-            sub_layout_2.addWidget(AGSValueLabel)
+            sub_layout_2.addWidget(self.AGSValueLabel)
             l.append(sub_layout_2)
 
             sub_layout_3 = QHBoxLayout()
             ShaftyLabel = QLabel("Shafty:")
-            ShaftyValueLabel = QLabel("placeholder")
+            self.ShaftyValueLabel = QLabel("placeholder")
             sub_layout_3.addWidget(ShaftyLabel)
-            sub_layout_3.addWidget(ShaftyValueLabel)
+            sub_layout_3.addWidget(self.ShaftyValueLabel)
             l.append(sub_layout_3)
 
         return l
     
     def load_models(self):
-        self.modelAGS = Model()
-        self.modelAGS.load_state_dict(torch.load('modelAGS.pth', weights_only=True))
+        self.modelAGS = ModelAGS()
+        self.modelAGS.load_state_dict(torch.load('modelparams/modelAGS.pth', weights_only=True))
         self.modelAGS.eval()
-        self.scalerAGS = joblib.load('scalerAGS.pkl')
+        self.scalerAGS = joblib.load('scalers/scalerAGS.pkl')
 
-        self.modelShafty = Model()
-        self.modelShafty.load_state_dict(torch.load('modelShafty.pth', weights_only=True))
+        self.modelShafty = ModelShafty()
+        self.modelShafty.load_state_dict(torch.load('modelparams/modelShafty.pth', weights_only=True))
         self.modelShafty.eval()
-        self.scalerShafty = joblib.load('scalerShafty.pkl')
+        self.scalerShafty = joblib.load('scalers/scalerShafty.pkl')
 
-        self.modelSitlingi = Model()
-        self.modelSitlingi.load_state_dict(torch.load('modelSitlingi.pth', weights_only=True))
-        self.modelSitlingi.eval()
-        self.scalerSitlingi = joblib.load('scalerSitlingi.pkl')
+        self.modelSlitingi = ModelSlitingi()
+        self.modelSlitingi.load_state_dict(torch.load('modelparams/modelSitlingi.pth', weights_only=True))
+        self.modelSlitingi.eval()
+        self.scalerSlitingi = joblib.load('scalers/scalerSitlingi.pkl')
     
     def predict(self, model):
         if model == "AGS":
             input_value = float(self.AGSinput.text())
             test_values = np.array([[input_value]])
-            scaled_test_value = self.scaler.transform(np.hstack([test_values, [[0, 0]]]))[:, 0:1]
+            scaled_test_value = self.scalerAGS.transform(np.hstack([test_values, [[0, 0]]]))[:, 0:1]
             test_tensor = torch.tensor(scaled_test_value, dtype=torch.float32)
 
             with torch.no_grad():
-                scaled_pred = self.model(test_tensor)
+                scaled_pred = self.modelAGS(test_tensor)
 
             scaled_pred_np = scaled_pred.numpy()
             scaled_pred_dummy = np.hstack([[0], scaled_pred_np[0]])
-            og_pred = self.scaler.inverse_transform([scaled_pred_dummy])[0][1:]
+            og_pred = self.scalerAGS.inverse_transform([scaled_pred_dummy])[0][1:]
 
             self.ShaftyValueLabel.setText(f"{og_pred[0]:.4f}")
-            self.SitlingiValueLabel.setText(f"{og_pred[1]:.4f}")
+            self.SlitingiValueLabel.setText(f"{og_pred[1]:.4f}")
+        elif model == "Shafty":
+            input_value = float(self.ShaftyInput.text())
+            test_values = np.array([[input_value]])
+            scaled_test_value = self.scalerShafty.transform(np.hstack([test_values, [[0, 0]]]))[:, 0:1]
+            test_tensor = torch.tensor(scaled_test_value, dtype=torch.float32)
 
+            with torch.no_grad():
+                scaled_pred = self.modelShafty(test_tensor)
+
+            scaled_pred_np = scaled_pred.numpy()
+            scaled_pred_dummy = np.hstack([[0], scaled_pred_np[0]])
+            og_pred = self.scalerShafty.inverse_transform([scaled_pred_dummy])[0][1:]
+
+            self.AGSValueLabel.setText(f"{og_pred[0]:.4f}")
+            self.SlitingiValueLabel.setText(f"{og_pred[1]:.4f}")
+        elif model == "Slitingi":
+            input_value = float(self.SlitingiInput.text())
+            test_values = np.array([[input_value]])
+            scaled_test_value = self.scalerSlitingi.transform(np.hstack([test_values, [[0, 0]]]))[:, 0:1]
+            test_tensor = torch.tensor(scaled_test_value, dtype=torch.float32)
+
+            with torch.no_grad():
+                scaled_pred = self.modelSlitingi(test_tensor)
+
+            scaled_pred_np = scaled_pred.numpy()
+            scaled_pred_dummy = np.hstack([[0], scaled_pred_np[0]])
+            og_pred = self.scalerSlitingi.inverse_transform([scaled_pred_dummy])[0][1:]
+
+            self.AGSValueLabel.setText(f"{og_pred[0]:.4f}")
+            self.ShaftyValueLabel.setText(f"{og_pred[1]:.4f}")

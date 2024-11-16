@@ -19,9 +19,9 @@ y = torch.tensor(scaled_df[["AGS","Shafty"]].values, dtype=torch.float32)
 
 learning_rate =0.01
 
-class Model(nn.Module):
+class ModelSitlingi(nn.Module):
     def __init__(self):
-        super(Model,self).__init__()
+        super(ModelSitlingi,self).__init__()
         self.hidden = nn.Linear(1, 10) 
         self.output = nn.Linear(10, 2)
 
@@ -31,26 +31,26 @@ class Model(nn.Module):
         return x
 
 
-model = Model()
+model = ModelSitlingi()
 criterion = nn.MSELoss() 
 optimizer = torch.optim.Adam(model.parameters(), learning_rate)
 
-
-epochs = 500
-for epoch in range(epochs):
-    model.train()
-
-    predictions = model(x)
-    loss = criterion(predictions, y)
+if __name__=="__main__":
+    epochs = 1000
+    for epoch in range(epochs):
+        model.train()
     
-    loss.backward()
-    optimizer.step()
-    optimizer.zero_grad()
+        predictions = model(x)
+        loss = criterion(predictions, y)
+        
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+        
     
-
-    if (epoch + 1) % 50 == 0:
-        print(f"Epoch {epoch+1}, Loss: {loss.item():.4f}")
-
-
-torch.save(model.state_dict(), 'modelSitlingi.pth')
-joblib.dump(scaler, 'scalerSitlingi.pkl')
+        if (epoch + 1) % 50 == 0:
+            print(f"Epoch {epoch+1}, Loss: {loss.item():.4f}")
+    
+    
+    torch.save(model.state_dict(), 'modelSitlingi.pth')
+    joblib.dump(scaler, 'scalerSitlingi.pkl')
